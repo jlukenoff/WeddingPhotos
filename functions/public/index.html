@@ -5,24 +5,33 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lukenoff Wedding</title>
+
     <link rel="stylesheet" href="main.css" />
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@200&display=swap");
+      @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap");
     </style>
   </head>
   <body>
     <div id="background-container">
       <div id="inner-content-container">
-        <h1>
+        <h1 id="app-header">
           Thank you for attending our wedding! Please upload your photos here
         </h1>
         <form id="photo-upload__form">
-          <label class="photo-upload__label">
-            Add Photos
-            <input type="file" id="photo-upload__input" name="photos" multiple />
+          <label id="photo-upload__label" for="photo-upload__input">
+            ADD PHOTOS
           </label>
-          <button type="submit" id="photo-upload__submit">Upload</button>
+          <input type="file" id="photo-upload__input" name="photos" multiple />
+          <button type="submit" id="photo-upload__submit" disabled>
+            UPLOAD
+          </button>
         </form>
+        <div class="loading-spinner" style="display: none"></div>
+        <img
+          id="complete-checkmark"
+          src="https://img.icons8.com/material-outlined/96/000000/checkmark--v3.png"
+          style="display: none"
+        />
       </div>
     </div>
     <script src="index.js"></script>
