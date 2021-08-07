@@ -1,11 +1,9 @@
+// Initialize Firebase
 import firebase from "firebase/app";
-// If you enabled Analytics in your project, add the Firebase SDK for Analytics
 import "firebase/analytics";
-
-// Add the Firebase products that you want to use
 import "firebase/storage";
+import "firebase/firestore";
 
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAi2pROL2o3A9hgraBpBtTPPrAJCcHGWfs",
   authDomain: "lukenoff-wedding.firebaseapp.com",
@@ -17,9 +15,19 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const storage = firebase.storage().ref();
 
+const storage = firebase.storage().ref();
+const db = firebase.firestore();
+
+// Get DOM elements
+const $appHeader = document.getElementById("app-header") as HTMLHeadingElement;
 const $form = document.getElementById("photo-upload__form") as HTMLFormElement;
+const $nameInput = document.getElementById(
+  "user-name__input"
+) as HTMLInputElement;
+const $noteInput = document.getElementById(
+  "note__input"
+) as HTMLTextAreaElement;
 const $uploadInput = document.getElementById(
   "photo-upload__input"
 ) as HTMLInputElement;
@@ -32,7 +40,6 @@ const $formSubmitButton = document.getElementById(
 const $formLoadingSpinner = document.querySelector(
   "#inner-content-container > .loading-spinner"
 ) as HTMLDivElement;
-const $appHeader = document.getElementById("app-header") as HTMLHeadingElement;
 const $formCompleteImg = document.getElementById(
   "complete-checkmark"
 ) as HTMLImageElement;
@@ -76,6 +83,14 @@ const updateButtonsWithState = (state: State) => {
     // updateButtonsWithState(State.NOT_STARTED);
     return;
   }
+
+  if (state === State.ERROR) {
+    $appHeader.textContent =
+      "Something went wrong. Please refresh the page and try again";
+    [$form, $formLoadingSpinner, $uploadInputLabel, $formSubmitButton].forEach(
+      ($e) => ($e.style.display = "none")
+    );
+  }
 };
 
 const sendFile = (file: File) => {
@@ -101,12 +116,25 @@ $uploadInput.addEventListener("change", (event) => {
 
 $form.addEventListener("submit", (event) => {
   event.preventDefault();
+
+  // Begin photo upload
   updateButtonsWithState(State.UPLOAD_STARTED);
   (async () => {
     try {
-      await Promise.all(files.map((f) => sendFile(f)));
+      await Promise.all([
+        ...files.map((f) => sendFile(f)),
+        db.collection("submissions").add({
+          name: $nameInput.value,
+          note: $noteInput.value,
+          photo_names: files.map((f) => f.name),
+          created_at: new Date().toISOString(),
+        }),
+      ]);
+
+      console.log("upload_completed");
       updateButtonsWithState(State.UPLOAD_DONE);
     } catch (e) {
+      console.error(e);
       updateButtonsWithState(State.ERROR);
     }
   })();
@@ -115,5 +143,7 @@ $form.addEventListener("submit", (event) => {
 /**
  * TODO:
  * - Add name and note inputs and figure out where to store them
+ * - Add user name or date to photo name to identify uploader later
+ * --------------------------------------------
  * - show thumbnail previews
  */
