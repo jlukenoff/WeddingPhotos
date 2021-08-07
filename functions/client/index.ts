@@ -1,3 +1,5 @@
+import { v4 as uuid } from "uuid";
+
 // Initialize Firebase
 import firebase from "firebase/app";
 import "firebase/analytics";
@@ -76,11 +78,9 @@ const updateButtonsWithState = (state: State) => {
   }
 
   if (state === State.UPLOAD_DONE) {
-    // $form.style.display = "block";
     $formLoadingSpinner.style.display = "none";
     $formCompleteImg.style.display = "block";
     $appHeader.textContent = "Your photos have been uploaded. Thank you!";
-    // updateButtonsWithState(State.NOT_STARTED);
     return;
   }
 
@@ -93,13 +93,19 @@ const updateButtonsWithState = (state: State) => {
   }
 };
 
-const sendFile = (file: File) => {
+const sendFile = (file: File, id: string, createdAt: string) => {
   const { name } = file;
-  return new Promise((resolve, reject) => {
-    const uploadRef = storage.child(name).put(file);
-    // convert Promise-like object returned by uploadRef to promise
-    uploadRef.then(resolve).catch(reject);
-  });
+  const fileName = `${uuid()}-${name}`;
+  return Promise.all([
+    storage.child(name).put(file),
+    db.collection("submissions").add({
+      id,
+      name: $nameInput.value,
+      note: $noteInput.value,
+      photo_name: fileName,
+      created_at: createdAt,
+    }),
+  ]);
 };
 
 $uploadInput.addEventListener("change", (event) => {
@@ -117,21 +123,14 @@ $uploadInput.addEventListener("change", (event) => {
 $form.addEventListener("submit", (event) => {
   event.preventDefault();
 
+  const createdAt = new Date().toISOString();
+  const id = uuid();
+
   // Begin photo upload
   updateButtonsWithState(State.UPLOAD_STARTED);
   (async () => {
     try {
-      await Promise.all([
-        ...files.map((f) => sendFile(f)),
-        db.collection("submissions").add({
-          name: $nameInput.value,
-          note: $noteInput.value,
-          photo_names: files.map((f) => f.name),
-          created_at: new Date().toISOString(),
-        }),
-      ]);
-
-      console.log("upload_completed");
+      await Promise.all(files.map((f) => sendFile(f, id, createdAt)));
       updateButtonsWithState(State.UPLOAD_DONE);
     } catch (e) {
       console.error(e);
@@ -139,11 +138,3 @@ $form.addEventListener("submit", (event) => {
     }
   })();
 });
-
-/**
- * TODO:
- * - Add name and note inputs and figure out where to store them
- * - Add user name or date to photo name to identify uploader later
- * --------------------------------------------
- * - show thumbnail previews
- */
