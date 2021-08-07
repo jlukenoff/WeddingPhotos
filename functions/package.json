@@ -2,7 +2,7 @@
   "name": "functions",
   "scripts": {
     "lint": "tslint --project tsconfig.json",
-    "build": "tsc && webpack build -p",
+    "build": "NODE_ENV='production' tsc && webpack build -p",
     "dev:build:client": "webpack build --watch",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
