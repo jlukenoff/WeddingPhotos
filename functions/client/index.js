@@ -22,41 +22,29 @@ const storage = firebase.storage().ref();
 const db = firebase.firestore();
 
 // Get DOM elements
-const $appHeader = document.getElementById("app-header") as HTMLHeadingElement;
-const $form = document.getElementById("photo-upload__form") as HTMLFormElement;
-const $nameInput = document.getElementById(
-  "user-name__input"
-) as HTMLInputElement;
-const $noteInput = document.getElementById(
-  "note__input"
-) as HTMLTextAreaElement;
-const $uploadInput = document.getElementById(
-  "photo-upload__input"
-) as HTMLInputElement;
-const $uploadInputLabel = document.getElementById(
-  "photo-upload__label"
-) as HTMLLabelElement;
-const $formSubmitButton = document.getElementById(
-  "photo-upload__submit"
-) as HTMLButtonElement;
+const $appHeader = document.getElementById("app-header");
+const $form = document.getElementById("photo-upload__form");
+const $nameInput = document.getElementById("user-name__input");
+const $noteInput = document.getElementById("note__input");
+const $uploadInput = document.getElementById("photo-upload__input");
+const $uploadInputLabel = document.getElementById("photo-upload__label");
+const $formSubmitButton = document.getElementById("photo-upload__submit");
 const $formLoadingSpinner = document.querySelector(
   "#inner-content-container > .loading-spinner"
-) as HTMLDivElement;
-const $formCompleteImg = document.getElementById(
-  "complete-checkmark"
-) as HTMLImageElement;
+);
+const $formCompleteImg = document.getElementById("complete-checkmark");
 
-let files: File[] = [];
+let files = [];
 
-enum State {
-  NOT_STARTED,
-  PHOTOS_ADDED,
-  UPLOAD_STARTED,
-  UPLOAD_DONE,
-  ERROR,
-}
+const State = {
+  NOT_STARTED: 0,
+  PHOTOS_ADDED: 1,
+  UPLOAD_STARTED: 2,
+  UPLOAD_DONE: 3,
+  ERROR: 4,
+};
 
-const updateButtonsWithState = (state: State) => {
+const updateButtonsWithState = (state) => {
   if (state === State.NOT_STARTED) {
     $uploadInputLabel.textContent = "ADD PHOTOS";
     $formSubmitButton.disabled = true;
@@ -93,11 +81,11 @@ const updateButtonsWithState = (state: State) => {
   }
 };
 
-const sendFile = (file: File, id: string, createdAt: string) => {
+const sendFile = (file, id, createdAt) => {
   const { name } = file;
   const fileName = `${uuid()}-${name}`;
   return Promise.all([
-    storage.child(name).put(file),
+    storage.child(fileName).put(file),
     db.collection("submissions").add({
       id,
       name: $nameInput.value,

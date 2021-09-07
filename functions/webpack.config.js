@@ -1,7 +1,7 @@
 const path = require("path");
 
 const OUTPUT_DIR = path.resolve(__dirname, "public");
-const ENTRY_POINT = path.resolve(__dirname, "client/index.ts");
+const ENTRY_POINT = path.resolve(__dirname, "client/index.js");
 const TSCONFIG_FILE = path.resolve(__dirname, "tsconfig.webpack.json");
 
 const isProd = process.env.NODE_ENV === "production";
